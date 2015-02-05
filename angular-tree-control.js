@@ -1,6 +1,6 @@
 (function ( angular ) {
     'use strict';
-    
+
     angular.module( 'treeControl', [] )
         .directive( 'treecontrol', ['$compile', function( $compile ) {
             /**
@@ -17,12 +17,30 @@
                 else
                     return "";
             }
-            
+
             function ensureDefault(obj, prop, value) {
                 if (!obj.hasOwnProperty(prop))
                     obj[prop] = value;
             }
-            
+
+            function openSiblings(el) {
+                var parent = angular.element(el).parent(),
+                    opened = [];
+                function isSiblingOpen(node, direction) {
+                    if(node[0]) {
+                        var currentNode = angular.element(node[0][direction + 'ElementSibling']);
+                        if(!currentNode.length) return;
+                        if(currentNode.hasClass('tree-expanded')){
+                            opened.push(currentNode.scope().$id)
+                         }
+                        isSiblingOpen(currentNode, direction);
+                    }
+                }
+                isSiblingOpen(parent, 'previous');
+                isSiblingOpen(parent, 'next');
+                return opened;
+            }
+
             return {
                 restrict: 'EA',
                 require: "treecontrol",
@@ -55,7 +73,7 @@
 
                     $scope.options = $scope.options || {};
                     ensureDefault($scope.options, "nodeChildren", "children");
-                    ensureDefault($scope.options, "dirSelectable", "true");
+                    ensureDefault($scope.options, "onLabelClick", "select");
                     ensureDefault($scope.options, "injectClasses", {});
                     ensureDefault($scope.options.injectClasses, "ul", "");
                     ensureDefault($scope.options.injectClasses, "li", "");
@@ -67,6 +85,7 @@
                     ensureDefault($scope.options.injectClasses, "labelSelected", "");
                     ensureDefault($scope.options, "equality", defaultEquality);
                     ensureDefault($scope.options, "isLeaf", defaultIsLeaf);
+                    ensureDefault($scope.options, "allowMultiple", true);
 
                     $scope.expandedNodes = $scope.expandedNodes || [];
                     $scope.expandedNodesMap = {};
@@ -75,6 +94,24 @@
                     }
                     $scope.parentScopeOfTree = $scope.$parent;
 
+                    $scope.collapseNode = function(node) {
+                        var index;
+                        for (var i=0; (i < $scope.expandedNodes.length) && !index; i++) {
+                            if ($scope.options.equality($scope.expandedNodes[i], node)) {
+                                index = i;
+                            }
+                        }
+                        if (index != undefined)
+                            $scope.expandedNodes.splice(index, 1);
+                        if($scope.onNodeToggle)
+                            $scope.onNodeToggle({node: node, expanded: false});
+                    };
+
+                    $scope.expandNode = function(node) {
+                        $scope.expandedNodes.push(node);
+                        if($scope.onNodeToggle)
+                            $scope.onNodeToggle({node: node, expanded: true});
+                    };
 
                     $scope.headClass = function(node) {
                         var liSelectionClass = classIfDefined($scope.options.injectClasses.liSelected, false);
@@ -100,32 +137,33 @@
                         return !!$scope.expandedNodesMap[this.$id];
                     };
 
-                    $scope.selectNodeHead = function() {
+                    $scope.selectNodeHead = function(event) {
                         var expanding = $scope.expandedNodesMap[this.$id] === undefined;
                         $scope.expandedNodesMap[this.$id] = (expanding ? this.node : undefined);
                         if (expanding) {
-                            $scope.expandedNodes.push(this.node);
+                            if(!$scope.options.allowMultiple){
+                                var openedSiblings  = openSiblings(event.currentTarget);
+                                openedSiblings.forEach(function (sibling) {
+                                    $scope.collapseNode($scope.expandedNodesMap[sibling]);
+                                })
+                            }
+                            $scope.expandNode(this.node);
                         }
                         else {
-                            var index;
-                            for (var i=0; (i < $scope.expandedNodes.length) && !index; i++) {
-                                if ($scope.options.equality($scope.expandedNodes[i], this.node)) {
-                                    index = i;
-                                }
-                            }
-                            if (index != undefined)
-                                $scope.expandedNodes.splice(index, 1);
+                            $scope.collapseNode(this.node)
                         }
-                        if ($scope.onNodeToggle)
-                            $scope.onNodeToggle({node: this.node, expanded: expanding});
                     };
 
-                    $scope.selectNodeLabel = function( selectedNode ){
-                        if (selectedNode[$scope.options.nodeChildren] && selectedNode[$scope.options.nodeChildren].length > 0 &&
-                            !$scope.options.dirSelectable) {
-                            this.selectNodeHead();
+                    $scope.selectNodeLabel = function( event, selectedNode ){
+                        if ( $scope.options.onLabelClick.match("expand|both") &&
+                            !$scope.expandedNodesMap[this.$id] &&
+                            selectedNode[$scope.options.nodeChildren] &&
+                            selectedNode[$scope.options.nodeChildren].length > 0) {
+                            this.selectNodeHead(event);
                         }
-                        else {
+                        if ($scope.options.onLabelClick.match("select|both") ||
+                            (selectedNode[$scope.options.nodeChildren] &&
+                            selectedNode[$scope.options.nodeChildren].length <= 0)){
                             if ($scope.selectedNode != selectedNode) {
                                 $scope.selectedNode = selectedNode;
                                 if ($scope.onSelection)
@@ -147,9 +185,9 @@
                     var template =
                         '<ul '+classIfDefined($scope.options.injectClasses.ul, true)+'>' +
                             '<li ng-repeat="node in node.' + $scope.options.nodeChildren + ' | orderBy:orderBy:reverseOrder" ng-class="headClass(node)" '+classIfDefined($scope.options.injectClasses.li, true)+'>' +
-                            '<i class="tree-branch-head" ng-class="iBranchClass()" ng-click="selectNodeHead(node)"></i>' +
+                            '<i class="tree-branch-head" ng-class="iBranchClass()" ng-click="selectNodeHead($event, node)"></i>' +
                             '<i class="tree-leaf-head '+classIfDefined($scope.options.injectClasses.iLeaf, false)+'"></i>' +
-                            '<div class="tree-label '+classIfDefined($scope.options.injectClasses.label, false)+'" ng-class="selectedClass()" ng-click="selectNodeLabel(node)" tree-transclude></div>' +
+                            '<div class="tree-label '+classIfDefined($scope.options.injectClasses.label, false)+'" ng-class="selectedClass()" ng-click="selectNodeLabel($event, node)" tree-transclude></div>' +
                             '<treeitem ng-if="nodeExpanded()"></treeitem>' +
                             '</li>' +
                             '</ul>';
@@ -245,7 +283,7 @@
                         });
                     }
                     if (scope.options.equality(scope.node, scope.selectedNode)) {
-                        scope.selectNodeLabel(scope.node);
+                        scope.selectNodeLabel("", scope.node);
                     }
 
                     // create a scope for the transclusion, whos parent is the parent of the tree control

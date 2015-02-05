@@ -292,9 +292,9 @@ describe('treeControl', function() {
             expect(element.find('li.tree-collapsed').length).toBe(1);
         });
 
-        it('should be able to make directories not selectable', function () {
+        it('should be able to make directories expand when clicked', function () {
             $rootScope.treedata = createSubTree(2, 2);
-            $rootScope.treeOptions = {dirSelectable: false};
+            $rootScope.treeOptions = {onLabelClick: 'expand'};
             element = $compile('<treecontrol tree-model="treedata" options="treeOptions">{{node.label}}</treecontrol>')($rootScope);
             $rootScope.$digest();
 
@@ -303,6 +303,17 @@ describe('treeControl', function() {
             expect(element.find('.tree-selected').length).toBe(0);
 
             element.find('li:eq(0) li:eq(0) div').click();
+            expect(element.find('.tree-selected').length).toBe(1);
+        });
+
+        it('should be able to make directories expand and selected when clicked', function () {
+            $rootScope.treedata = createSubTree(2, 2);
+            $rootScope.treeOptions = {onLabelClick: 'both'};
+            element = $compile('<treecontrol tree-model="treedata" options="treeOptions">{{node.label}}</treecontrol>')($rootScope);
+            $rootScope.$digest();
+
+            element.find('li:eq(0) div').click();
+            expect(element.find('li:eq(0)').hasClass('tree-expanded')).toBeTruthy();
             expect(element.find('.tree-selected').length).toBe(1);
         });
 
@@ -342,6 +353,19 @@ describe('treeControl', function() {
             element.find('li:eq(0) .tree-branch-head').click();
             expect(element.find('li:eq(0) .tree-branch-head').hasClass('expandcls')).toBeTruthy();
             expect(element.find('li:eq(1) .tree-branch-head').hasClass('collapsecls')).toBeTruthy();
+        });
+
+        xit('should be able to optionally close siblings when a node is opened', function() {
+            $rootScope.treeOptions = { allowMultiple: false }
+            $rootScope.treedata = createSubTree(2, 2);
+            element = $compile('<treecontrol tree-model="treedata" options="treeOptions">{{node.label}}</treecontrol>')($rootScope);
+            $rootScope.$digest();
+
+            element.find('li:eq(0) .tree-branch-head').click();
+            expect(element.find('.tree-expanded').length).toBe(1);
+
+            element.find('li:eq(1) .tree-branch-head').click();
+            expect(element.find('.tree-expanded').length).toBe(1);
         });
     });
 
