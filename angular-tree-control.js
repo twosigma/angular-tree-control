@@ -87,6 +87,7 @@
                     ensureDefault($scope.options, "isLeaf", defaultIsLeaf);
                     ensureDefault($scope.options, "allowMultiple", true);
                     ensureDefault($scope.options, "allowReSelection", true);
+                    ensureDefault($scope.options, "performTreeSelectionOnLoad", true);
 
                     $scope.expandedNodes = $scope.expandedNodes || [];
                     $scope.expandedNodesMap = {};
@@ -283,7 +284,8 @@
                             }
                         });
                     }
-                    if (scope.options.equality(scope.node, scope.selectedNode)) {
+                    if (scope.options.performTreeSelectionOnLoad &&
+                        scope.options.equality(scope.node, scope.selectedNode)) {
                         scope.selectNodeLabel("", scope.node);
                     }
 
