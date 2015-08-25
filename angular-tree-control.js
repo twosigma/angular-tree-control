@@ -86,6 +86,7 @@
                     ensureDefault($scope.options, "equality", defaultEquality);
                     ensureDefault($scope.options, "isLeaf", defaultIsLeaf);
                     ensureDefault($scope.options, "allowMultiple", true);
+                    ensureDefault($scope.options, "allowReSelection", true);
 
                     $scope.expandedNodes = $scope.expandedNodes || [];
                     $scope.expandedNodesMap = {};
@@ -164,7 +165,7 @@
                         if ($scope.options.onLabelClick.match("select|both") ||
                             (selectedNode[$scope.options.nodeChildren] &&
                             selectedNode[$scope.options.nodeChildren].length <= 0)){
-                            if ($scope.selectedNode != selectedNode) {
+                            if ($scope.selectedNode != selectedNode || $scope.options.allowReSelection) {
                                 $scope.selectedNode = selectedNode;
                                 if ($scope.onSelection)
                                     $scope.onSelection({node: selectedNode});
