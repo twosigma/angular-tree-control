@@ -80,18 +80,21 @@
                                 $scope.selectNodeLabel("", $scope.visibleNodes[$scope.visibleNodes.length-1]);
                             },
                             expandNode: function() {
-                                var nodeObj = {$id: $scope.nodeIdMap[$scope.selectedNode.id], node: $scope.selectedNode};
+                                var nodeObj = {$id: selectedId(), node: $scope.selectedNode};
                                 if(!$scope.selectedNode || $scope.nodeExpanded.call(nodeObj)) return;
                                 $scope.selectNodeHead.call(nodeObj);
                             },
                             collapseNode: function() {
-                                var nodeObj = {$id: $scope.nodeIdMap[$scope.selectedNode.id], node: $scope.selectedNode};
+                                var nodeObj = {$id: selectedId(), node: $scope.selectedNode};
                                 if(!$scope.selectedNode || !$scope.nodeExpanded.call(nodeObj)) return;
                                 $scope.selectNodeHead.call(nodeObj);
                             }
                         };
                     }
 
+                    function selectedId() {
+                        return Object.keys($scope.expandedNodesMap).filter(function(id) {return $scope.expandedNodesMap[id] === $scope.selectedNode})[0];
+                    }
 
                     function defaultIsLeaf(node) {
                         return !node[$scope.options.nodeChildren] || node[$scope.options.nodeChildren].length === 0;
