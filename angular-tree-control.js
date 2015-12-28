@@ -54,6 +54,7 @@
                     expandedNodes: "=?",
                     onSelection: "&",
                     onNodeToggle: "&",
+                    contextMenu: "&",
                     bindFunctionsTo: "=?",
                     options: "=?",
                     orderBy: "@",
@@ -155,6 +156,11 @@
                         $scope.expandedNodes.push(node);
                         if($scope.onNodeToggle)
                             $scope.onNodeToggle({node: node, expanded: true});
+                    };
+
+                    $scope.menu = function(node) {
+                        if($scope.contextMenu)
+                            return $scope.contextMenu({node: node});
                     };
 
                     $scope.headClass = function(node) {
