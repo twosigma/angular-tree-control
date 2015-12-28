@@ -249,17 +249,17 @@
                     if(!template) {
                         template =
                             '<ul {{options.ulClass}} >' +
-                            '<li ng-repeat="node in node.{{options.nodeChildren}}" ng-class="headClass(node)" {{options.liClass}}' +
+                            '<li ng-repeat="node in node.{{options.nodeChildren}} | orderBy:orderBy:reverseOrder" ng-class="headClass(node)" {{options.liClass}}' +
                             'set-node-to-data>' +
-                            '<i class="tree-branch-head" ng-class="iBranchClass()" ng-click="selectNodeHead(node)"></i>' +
+                            '<i class="tree-branch-head" ng-class="iBranchClass()" ng-click="selectNodeHead($event, node)"></i>' +
                             '<i class="tree-leaf-head {{options.iLeafClass}}"></i>' +
-                            '<div class="tree-label {{options.labelClass}}" ng-class="[selectedClass(), unselectableClass()]" ng-click="selectNodeLabel(node)" tree-transclude></div>' +
+                            '<div class="tree-label {{options.labelClass}}" ng-class="[selectedClass(), unselectableClass()]" ng-click="selectNodeLabel($event, node)" tree-transclude></div>' +
                             '<treeitem ng-if="nodeExpanded()"></treeitem>' +
                             '</li>' +
                             '</ul>';
                     }
 
-                    this.template = $compile($interpolate(template)({options: templateOptions}));
+                    return  {template: $compile($interpolate(template)({options: templateOptions}))}
                 }],
                 compile: function(element, attrs, childTranscludeFn) {
                     return function ( scope, element, attrs, treemodelCntr ) {
