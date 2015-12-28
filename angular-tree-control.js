@@ -2,6 +2,9 @@
     'use strict';
 
     angular.module( 'treeControl', [] )
+        .constant('treeConfig', {
+            templateUrl: null
+        })
         .directive( 'treecontrol', ['$compile', function( $compile ) {
             /**
              * @param cssClass - the css class
@@ -56,7 +59,7 @@
                     orderBy: "@",
                     reverseOrder: "@"
                 },
-                controller: ['$scope', function( $scope ) {
+                controller: ['$scope', '$templateCache', '$interpolate', 'treeConfig', function( $scope, $templateCache, $interpolate, treeConfig ) {
 
                     $scope.visibleNodes = [];
                     $scope.nodeIdMap = {};
@@ -227,19 +230,30 @@
                     };
 
                     //tree template
-                    var template =
-                        '<ul '+classIfDefined($scope.options.injectClasses.ul, true)+'>' +
-                            '<li ng-repeat="node in node.' + $scope.options.nodeChildren + ' | orderBy:orderBy:reverseOrder" ng-class="headClass(node)" '+classIfDefined($scope.options.injectClasses.li, true)+'>' +
-                            '<i class="tree-branch-head" ng-class="iBranchClass()" ng-click="selectNodeHead($event, node)"></i>' +
-                            '<i class="tree-leaf-head '+classIfDefined($scope.options.injectClasses.iLeaf, false)+'"></i>' +
-                            '<div class="tree-label '+classIfDefined($scope.options.injectClasses.label, false)+'" ng-class="selectedClass()" ng-click="selectNodeLabel($event, node)" tree-transclude></div>' +
+                    var templateOptions = {
+                        ulClass: classIfDefined($scope.options.injectClasses.ul, true),
+                        nodeChildren: $scope.options.nodeChildren,
+                        liClass: classIfDefined($scope.options.injectClasses.li, true),
+                        iLeafClass: classIfDefined($scope.options.injectClasses.iLeaf, false),
+                        labelClass: classIfDefined($scope.options.injectClasses.label, false)
+                    };
+
+                    var template = $scope.options.template || treeConfig.template;
+
+                    if(!template) {
+                        template =
+                            '<ul {{options.ulClass}} >' +
+                            '<li ng-repeat="node in node.{{options.nodeChildren}}" ng-class="headClass(node)" {{options.liClass}}' +
+                            'set-node-to-data>' +
+                            '<i class="tree-branch-head" ng-class="iBranchClass()" ng-click="selectNodeHead(node)"></i>' +
+                            '<i class="tree-leaf-head {{options.iLeafClass}}"></i>' +
+                            '<div class="tree-label {{options.labelClass}}" ng-class="[selectedClass(), unselectableClass()]" ng-click="selectNodeLabel(node)" tree-transclude></div>' +
                             '<treeitem ng-if="nodeExpanded()"></treeitem>' +
                             '</li>' +
                             '</ul>';
-
-                    return {
-                        template: $compile(template)
                     }
+
+                    this.template = $compile($interpolate(template)({options: templateOptions}));
                 }],
                 compile: function(element, attrs, childTranscludeFn) {
                     return function ( scope, element, attrs, treemodelCntr ) {
