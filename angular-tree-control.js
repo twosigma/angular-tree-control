@@ -131,6 +131,7 @@
                     ensureDefault($scope.options, "allowMultiple", true);
                     ensureDefault($scope.options, "allowReSelection", true);
                     ensureDefault($scope.options, "performTreeSelectionOnLoad", true);
+                    ensureDefault($scope.options, "allowGetChildrenAfterExpand", false);
 
                     $scope.expandedNodes = $scope.expandedNodes || [];
                     $scope.expandedNodesMap = {};
@@ -206,8 +207,8 @@
 
                     $scope.selectNodeLabel = function( event, selectedNode ){
                         if ( $scope.options.onLabelClick.match("expand|both") &&
-                            selectedNode[$scope.options.nodeChildren] &&
-                            selectedNode[$scope.options.nodeChildren].length > 0) {
+                            ((selectedNode[$scope.options.nodeChildren] &&
+                            selectedNode[$scope.options.nodeChildren].length > 0) || $scope.options.allowGetChildrenAfterExpand) ) {
                             this.selectNodeHead(event);
                         }
                         if ($scope.options.onLabelClick.match("select|both") ||
