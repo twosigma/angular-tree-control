@@ -206,7 +206,6 @@
 
                     $scope.selectNodeLabel = function( event, selectedNode ){
                         if ( $scope.options.onLabelClick.match("expand|both") &&
-                            !$scope.expandedNodesMap[this.$id] &&
                             selectedNode[$scope.options.nodeChildren] &&
                             selectedNode[$scope.options.nodeChildren].length > 0) {
                             this.selectNodeHead(event);
