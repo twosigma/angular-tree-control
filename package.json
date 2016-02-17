@@ -17,8 +17,8 @@
   },
   "homepage": "https://github.com/wix/angular-tree-control",
   "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-release": "~0.6.0",
+    "grunt": "",
+    "grunt-release": "",
     "karma-script-launcher": "~0.1.0",
     "karma-chrome-launcher": "~0.1.2",
     "karma-firefox-launcher": "~0.1.3",
