@@ -126,6 +126,8 @@
                     ensureDefault($scope.options.injectClasses, "iLeaf", "");
                     ensureDefault($scope.options.injectClasses, "label", "");
                     ensureDefault($scope.options.injectClasses, "labelSelected", "");
+                    ensureDefault($scope.options.injectClasses, "iPointerExpanded", "");
+                    ensureDefault($scope.options.injectClasses, "iPointerCollapsed", "");
                     ensureDefault($scope.options, "equality", defaultEquality);
                     ensureDefault($scope.options, "isLeaf", defaultIsLeaf);
                     ensureDefault($scope.options, "allowMultiple", true);
@@ -182,6 +184,13 @@
                             return classIfDefined($scope.options.injectClasses.iExpanded);
                         else
                             return classIfDefined($scope.options.injectClasses.iCollapsed);
+                    };
+
+                    $scope.iBranchPointerClass = function() {
+                        if ($scope.expandedNodesMap[this.$id])
+                            return classIfDefined($scope.options.injectClasses.iPointerExpanded);
+                        else
+                            return classIfDefined($scope.options.injectClasses.iPointerCollapsed);
                     };
 
                     $scope.nodeExpanded = function() {
